@@ -12,6 +12,7 @@ contract Voting {
     }
 
     Vote[] public voteLog; // Array to store the vote log
+    mapping(string => bool) public hasVoted; // Track if a student ID has voted
 
     constructor(uint[] memory candidateIds_) {
         admin = msg.sender; // Set the deployer as the admin
@@ -25,8 +26,10 @@ contract Voting {
 
     function vote(uint candidateId, string memory studentId) public onlyAdmin {
         require(validCandidate(candidateId), "Invalid candidate ID");
+        require(!hasVoted[studentId], "Student has already voted"); // Check if user has voted
         votesReceived[candidateId] += 1;
         voteLog.push(Vote(candidateId, studentId)); // Log the vote with studentId
+        hasVoted[studentId] = true; // Mark the student as having voted
         emit VoteRecorded(candidateId, studentId);
     }
 
@@ -46,6 +49,10 @@ contract Voting {
 
     function getVoteLog() public view returns (Vote[] memory) {
         return voteLog;
+    }
+
+    function hasStudentVoted(string memory studentId) public view returns (bool) {
+        return hasVoted[studentId];
     }
 
     event VoteRecorded(uint candidateId, string studentId); // Event to emit when a vote is recorded
